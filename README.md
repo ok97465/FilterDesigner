@@ -2,7 +2,7 @@
 ---
 [![License: MIT](https://img.shields.io/cocoapods/l/AFNetworking.svg)](./LICENSE)
 [![build status](
-  http://img.shields.io/travis/username/repo/master.svg?style=flat)](
+  https://travis-ci.org/ok97465/FilterDesigner.svg?branch=master)](
  https://travis-ci.org/ok97465/FilterDesigner)
  
 This project implement the FilterDesigner of matlab using PyQt.
