@@ -1,8 +1,8 @@
 jupyterthemes>=0.20.0
 matplotlib>=3.0.2
-pyqt>=5.8
-qtpy>=1.5.0
-qdarkstyle>=2.6.8
-qtawesome>=0.5.7
+PyQt5
+QtPy>=1.5.0
+QDarkStyle>=2.6.8
+QtAwesome>=0.5.7
 scipy>=1.2.0
 numpy>=1.15.4
