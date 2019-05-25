@@ -9,7 +9,6 @@ import pytest
 
 # Local imports
 from filterdesigner.main import QDesignerMainWindow
-from filterdesigner.lpf import LeastSquareLPF
 
 # @pytest.fixture
 def test_mainwindow_init(qtbot):
