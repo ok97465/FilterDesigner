@@ -21,9 +21,9 @@ class QDesignerMainWindow(QMainWindow):
         super(QDesignerMainWindow, self).__init__(parent)
 
         if CONF.dark_theme:
-            jtplot.style('onedork')
+            jtplot.style('onedork', fscale=0.8)
         else:
-            jtplot.style('grade3')
+            jtplot.style('grade3', fscale=0.8)
         self.stacked_widget = QStackedWidget(self)
 
         # Widget Add

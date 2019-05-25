@@ -5,7 +5,7 @@
 """."""
 
 import numpy as np
-from numpy import ndarray, arange
+from numpy import ndarray, arange, angle, rad2deg, unwrap
 from numpy.fft import fft
 
 
@@ -45,7 +45,7 @@ def db2(data, db_range=60.0, db_cut=None, b_normalize=True):
     return db_data
 
 
-def magnitude_of_frequency_response(data, fs, uprate):
+def frequency_response(data, fs, uprate):
     """
 
     Parameters
@@ -57,13 +57,15 @@ def magnitude_of_frequency_response(data, fs, uprate):
 
     Returns
     -------
-    (ndarray, ndarray)
-        mag_fre_db, frequnecy
+    (ndarray, ndarray, ndarray)
+        mag_fre_db, phase_fre_rad, frequnecy
     """
-    mag_fre = fft(data, len(data) * uprate)
-    mag_fre_db = db2(mag_fre, 90)[:len(mag_fre)//2]
+    response = fft(data, len(data) * uprate)
+    mag_db = db2(response, 90)[:len(response)//2]
+    phase_rad = angle(response)[:len(response) // 2]
+    phase_rad = unwrap(phase_rad)
 
-    n_sample = len(mag_fre_db)
+    n_sample = len(mag_db)
     frequency = arange(n_sample) / n_sample * fs / 2
 
-    return mag_fre_db, frequency
+    return mag_db, phase_rad, frequency

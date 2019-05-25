@@ -21,7 +21,13 @@ from qtpy.QtWidgets import (QVBoxLayout, QHBoxLayout, QWidget, QGroupBox,
 from filterdesigner.filterbase import (TYPE_LPF, TYPE_HPF, TYPE_BPF, TYPE_BSF,
                                        METHOD_IIR, METHOD_FIR)
 from filterdesigner.filterdesign.fir import EquiRipple, LeastSquare
-from filterdesigner.helper.signal import magnitude_of_frequency_response
+from filterdesigner.helper.signal import frequency_response
+
+
+ANALYSIS_MAG = 0
+ANALYSIS_PHASE = 1
+ANALYSIS_MAG_PHASE = 2
+ANALYSIS_IMPULSE = 3
 
 
 class FilterDesignWidget(QWidget):
@@ -37,9 +43,26 @@ class FilterDesignWidget(QWidget):
         self.taps: ndarray = zeros(1)
         self.fs: float = 0
 
+        # Analysis Method
+        self.analysis_method_radio_group = QButtonGroup(self)
+        self.analysis_method_radio_group.buttonClicked.connect(self.plot_filter)
+        self.radio_mag = QRadioButton("Magnitude Response", self)
+        self.radio_phase = QRadioButton("Phase Response", self)
+        self.radio_mag_phase = QRadioButton("Magnitude+Phase  Responses", self)
+        self.radio_impulse = QRadioButton("Impulse Response", self)
+        self.analysis_method_radio_group.addButton(self.radio_mag,
+                                                   ANALYSIS_MAG)
+        self.analysis_method_radio_group.addButton(self.radio_phase,
+                                                   ANALYSIS_PHASE)
+        self.analysis_method_radio_group.addButton(self.radio_mag_phase,
+                                                   ANALYSIS_MAG_PHASE)
+        self.analysis_method_radio_group.addButton(self.radio_impulse,
+                                                   ANALYSIS_IMPULSE)
+
         # Figure
         self.fig = Figure()
         self.ax = self.fig.add_subplot(111)
+        self.ax_twin = self.ax.twinx()
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.init_plot()
 
@@ -113,7 +136,7 @@ class FilterDesignWidget(QWidget):
         base_layout.addLayout(bottom_hbox)
         base_layout.addWidget(self.push_design)
 
-        upper_hbox.addWidget(self.group_description())
+        upper_hbox.addWidget(self.group_analysis_method())
         upper_hbox.addWidget(self.group_figure())
 
         bottom_hbox.addWidget(self.group_bottom())
@@ -127,6 +150,12 @@ class FilterDesignWidget(QWidget):
         self.combo_fir.currentIndexChanged.connect(self.change_ui)
         self.change_ui()
 
+    def clear_axes(self):
+        self.ax.clear()
+        self.ax_twin.clear()
+        self.ax_twin.set_frame_on(False)
+        self.ax_twin.get_yaxis().set_visible(False)
+
     def select_filter_type(self):
         filter_instance = self.get_filter()
 
@@ -134,18 +163,23 @@ class FilterDesignWidget(QWidget):
         filter_instance.set_ui_options(filter_type)
 
     def init_plot(self):
-        self.ax.clear()
+        self.clear_axes()
         self.fig.tight_layout()
 
-    def group_description(self):
+    def group_analysis_method(self):
         """Generate GroupBox for Description."""
         vbox = QVBoxLayout()
-        vbox.addWidget(QLabel("Structure"))
+
+        vbox.addWidget(self.radio_mag)
+        vbox.addWidget(self.radio_phase)
+        vbox.addWidget(self.radio_mag_phase)
+        vbox.addWidget(self.radio_impulse)
+        self.radio_mag.setChecked(True)
 
         group = QGroupBox(self)
         group.setLayout(vbox)
-        group.setTitle("Current Filter Information")
-        group.setMaximumWidth(400)
+        group.setTitle("Analysis Method")
+        group.setFixedWidth(220)
 
         return group
 
@@ -237,7 +271,7 @@ class FilterDesignWidget(QWidget):
 
         filter_type = self.type_radio_group.checkedId()
 
-        self.ax.clear()
+        self.clear_axes()
         try:
             self.taps, self.fs = filter_instance.calc_filter(filter_type)
             self.plot_filter()
@@ -254,15 +288,47 @@ class FilterDesignWidget(QWidget):
            (len(self.taps) < 2):
             return
 
-        mag_fre_db, fre = magnitude_of_frequency_response(
-            self.taps, self.fs, 1024)
+        self.clear_axes()
 
+        mag_fre_db, phase_fre_rad, fre = frequency_response(
+            self.taps, self.fs, 1024)
         unit = self.freq_unit_combo.itemText(
             self.freq_unit_combo.currentIndex())
-        self.ax.plot(fre, mag_fre_db)
-        self.ax.set_ylabel("Magnitude [dB]")
-        self.ax.set_xlabel(f"Frequency [{unit}]")
-        self.ax.set_xlim([0, self.fs / 2])
+
+        check_id = self.analysis_method_radio_group.checkedId()
+        if check_id == ANALYSIS_MAG:
+            self.ax.plot(fre, mag_fre_db)
+            self.ax.set_ylabel("Magnitude [dB]")
+            self.ax.set_xlabel(f"Frequency [{unit}]")
+            self.ax.set_xlim([0, self.fs / 2])
+        elif check_id == ANALYSIS_PHASE:
+            self.ax.plot(fre, phase_fre_rad)
+            self.ax.set_ylabel("Phase [rad]")
+            self.ax.set_xlabel(f"Frequency [{unit}]")
+            self.ax.set_xlim([0, self.fs / 2])
+        elif check_id == ANALYSIS_MAG_PHASE:
+            self.ax.plot(fre, mag_fre_db)
+
+            line_right = self.ax_twin.plot(fre, phase_fre_rad, '-g')
+            self.ax_twin.yaxis.label.set_color(line_right[0].get_color())
+            self.ax_twin.tick_params(axis='y', colors=line_right[0].get_color())
+            self.ax_twin.spines["right"].set_edgecolor(line_right[0].get_color())
+            self.ax_twin.set_ylabel("Phase [rad]")
+            self.ax_twin.get_yaxis().set_visible(True)
+            self.ax_twin.set_frame_on(True)
+
+            self.ax.set_ylabel("Magnitude [dB]")
+            self.ax.set_xlabel(f"Frequency [{unit}]")
+            self.ax.set_xlim([0, self.fs / 2])
+
+        elif check_id == ANALYSIS_IMPULSE:
+            self.ax.stem(self.taps)
+            self.ax.set_ylabel("Amplitude")
+            self.ax.set_xlabel(f"[sample]")
+            self.ax.set_xlim([0, len(self.taps) - 1])
+
+        self.fig.tight_layout()
+        self.fig.canvas.draw()
 
     def resizeEvent(self, event):
         """Override resizeEvent of Qt."""
