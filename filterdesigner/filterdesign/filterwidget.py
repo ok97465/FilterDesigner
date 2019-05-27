@@ -316,6 +316,7 @@ class FilterDesignWidget(QWidget):
             self.ax_twin.set_ylabel("Phase [rad]")
             self.ax_twin.get_yaxis().set_visible(True)
             self.ax_twin.set_frame_on(True)
+            self.ax_twin.grid(False)
 
             self.ax.set_ylabel("Magnitude [dB]")
             self.ax.set_xlabel(f"Frequency [{unit}]")
