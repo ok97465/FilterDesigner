@@ -4,7 +4,7 @@
 
 class UserConfig(object):
     """"""
-    dark_theme: bool = True
+    dark_theme: bool = False
 
     def __init__(self):
         """Init."""

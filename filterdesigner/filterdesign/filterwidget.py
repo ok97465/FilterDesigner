@@ -19,6 +19,7 @@ from qtpy.QtWidgets import (QVBoxLayout, QHBoxLayout, QWidget, QGroupBox,
                             QButtonGroup, QMessageBox)
 
 # Local import
+from filterdesigner.config import UserConfig as CONF
 from filterdesigner.filterbase import (TYPE_LPF, TYPE_HPF, TYPE_BPF, TYPE_BSF,
                                        METHOD_IIR, METHOD_FIR)
 from filterdesigner.filterdesign.fir import EquiRipple, LeastSquare
@@ -66,6 +67,11 @@ class FilterDesignWidget(QWidget):
         self.ax_twin = self.ax.twinx()
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.canvas_toolbar = NavigationToolbar2QT(self.canvas, self, True)
+
+        if CONF.dark_theme:
+            self.canvas_toolbar.setStyleSheet(
+                "QToolBar {background-color: #19232d}")
+
         self.init_plot()
 
         # Units
