@@ -11,7 +11,8 @@ import sip
 # Third party imports
 from numpy import ndarray, zeros
 from matplotlib.pyplot import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
+                                                NavigationToolbar2QT)
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import (QVBoxLayout, QHBoxLayout, QWidget, QGroupBox,
                             QLabel, QRadioButton, QPushButton, QComboBox,
@@ -64,6 +65,7 @@ class FilterDesignWidget(QWidget):
         self.ax = self.fig.add_subplot(111)
         self.ax_twin = self.ax.twinx()
         self.canvas = FigureCanvasQTAgg(self.fig)
+        self.canvas_toolbar = NavigationToolbar2QT(self.canvas, self, True)
         self.init_plot()
 
         # Units
@@ -151,8 +153,8 @@ class FilterDesignWidget(QWidget):
         self.change_ui()
 
     def clear_axes(self):
-        self.ax.clear()
-        self.ax_twin.clear()
+        self.ax.cla()
+        self.ax_twin.cla()
         self.ax_twin.set_frame_on(False)
         self.ax_twin.get_yaxis().set_visible(False)
 
@@ -165,6 +167,7 @@ class FilterDesignWidget(QWidget):
     def init_plot(self):
         self.clear_axes()
         self.fig.tight_layout()
+        self.fig.canvas.draw_idle()
 
     def group_analysis_method(self):
         """Generate GroupBox for Description."""
@@ -187,10 +190,12 @@ class FilterDesignWidget(QWidget):
         """Generate GroupBox for figure."""
         vbox = QVBoxLayout()
         vbox.addWidget(self.canvas)
+        vbox.addWidget(self.canvas_toolbar)
 
         group = QGroupBox(self)
         group.setLayout(vbox)
         group.setTitle("Filter Specifications")
+        group.setMinimumHeight(500)
 
         return group
 
@@ -281,7 +286,7 @@ class FilterDesignWidget(QWidget):
             QMessageBox.warning(self, "Error", str(e))
 
         self.fig.tight_layout()
-        self.fig.canvas.draw()
+        self.fig.canvas.draw_idle()
 
     def plot_filter(self):
         if (isinstance(self.taps, ndarray) is not True) or \
@@ -329,7 +334,7 @@ class FilterDesignWidget(QWidget):
             self.ax.set_xlim([0, len(self.taps) - 1])
 
         self.fig.tight_layout()
-        self.fig.canvas.draw()
+        self.fig.canvas.draw_idle()
 
     def resizeEvent(self, event):
         """Override resizeEvent of Qt."""
