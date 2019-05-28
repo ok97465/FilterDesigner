@@ -305,6 +305,7 @@ class FilterDesignWidget(QWidget):
             self.taps, self.fs, 1024)
         unit = self.freq_unit_combo.itemText(
             self.freq_unit_combo.currentIndex())
+        self.ax_twin.set_zorder(-1)  # For display the coordinate of self.ax in self.canvas_toolbar
 
         check_id = self.analysis_method_radio_group.checkedId()
         if check_id == ANALYSIS_MAG:
@@ -328,6 +329,7 @@ class FilterDesignWidget(QWidget):
             self.ax_twin.get_yaxis().set_visible(True)
             self.ax_twin.set_frame_on(True)
             self.ax_twin.grid(False)
+            self.ax_twin.set_zorder(2)
 
             self.ax.set_ylabel("Magnitude [dB]")
             self.ax.set_xlabel(f"Frequency [{unit}]")
