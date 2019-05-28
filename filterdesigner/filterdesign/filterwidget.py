@@ -70,7 +70,16 @@ class FilterDesignWidget(QWidget):
 
         if CONF.dark_theme:
             self.canvas_toolbar.setStyleSheet(
-                "QToolBar {background-color: #19232d}")
+                """QToolBar {background-color: #19232d;
+                             spacing: 5px}
+                   QToolButton::checked {background-color: #54636D;
+                                         border-color : #148cd2}
+                """
+                          )
+        else:
+            self.canvas_toolbar.setStyleSheet(
+                """QToolBar {spacing: 5px}"""
+            )
 
         self.init_plot()
 
