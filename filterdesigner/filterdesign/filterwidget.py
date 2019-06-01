@@ -168,18 +168,21 @@ class FilterDesignWidget(QWidget):
         self.change_ui()
 
     def clear_axes(self):
+        """Clear axes of canvas."""
         self.ax.cla()
         self.ax_twin.cla()
         self.ax_twin.set_frame_on(False)
         self.ax_twin.get_yaxis().set_visible(False)
 
     def select_filter_type(self):
+        """Change UI based on filter type in type_radio_group."""
         filter_instance = self.get_filter()
 
         filter_type = self.type_radio_group.checkedId()
         filter_instance.set_ui_options(filter_type)
 
     def init_plot(self):
+        """Init Figure of filter widget."""
         self.clear_axes()
         self.fig.tight_layout()
         self.fig.canvas.draw_idle()
@@ -304,6 +307,7 @@ class FilterDesignWidget(QWidget):
         self.fig.canvas.draw_idle()
 
     def plot_filter(self):
+        """Plot the filter response."""
         if (isinstance(self.taps, ndarray) is not True) or \
            (len(self.taps) < 2):
             return
@@ -361,6 +365,7 @@ class FilterDesignWidget(QWidget):
         super(FilterDesignWidget, self).resizeEvent(event)
 
     def delete_layout(self, layout):
+        """Delete the current UI."""
         if layout is not None:
             while layout.count():
                 item = layout.takeAt(0)
@@ -372,6 +377,7 @@ class FilterDesignWidget(QWidget):
             sip.delete(layout)
 
     def get_filter(self):
+        """Get the selected filter instance in filter type combobox."""
         if self.method_radio_group.checkedId() == METHOD_FIR:
             filter_instance = self.fir_list[self.combo_fir.currentIndex()]
         else:
@@ -380,6 +386,10 @@ class FilterDesignWidget(QWidget):
         return filter_instance
 
     def change_ui(self):
+        """
+        Change UI of filterwidget based on the selected filter_type and
+        filter_method in the Combobox.
+        """
         filter_instance = self.get_filter()
 
         filter_type = self.type_radio_group.checkedId()
